@@ -530,12 +530,12 @@
                 <div class="stat-change" id="brent-variacao">+0,00%</div>
             </div>
             <div class="stat-card">
-                <h3>💧 Preço por Litro - FOB</h3>
+                <h3>💧 Preço por Litro</h3>
                 <div class="stat-value" id="preco-litro">R$ 0,00</div>
                 <div class="stat-change" id="litro-variacao">+0,00%</div>
             </div>
             <div class="stat-card">
-                <h3>⚖️ Preço por Kg - FOB</h3>
+                <h3>⚖️ Preço por Kg</h3>
                 <div class="stat-value" id="preco-kg">R$ 0,00</div>
                 <div class="stat-change" id="kg-variacao">+0,00%</div>
             </div>
@@ -553,8 +553,8 @@
                             <th>📅 Data</th>
                         <th>💵 Dólar (R$)</th>
                         <th>🛢️ Brent (US$)</th>
-                        <th>💧 Preço/Litro (R$) - FOB</th>
-                        <th>⚖️ Preço/Kg (R$) - FOB</th>
+                        <th>💧 Preço/Litro (R$)</th>
+                        <th>⚖️ Preço/Kg (R$)</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-historico">
@@ -569,7 +569,7 @@
     <!-- Comparações por Período -->
         <div class="comparison-grid">
             <div class="comparison-card">
-                <div class="comparison-title">📊 Médias - Últimos 7 Dias - FOB</div>
+                <div class="comparison-title">📊 Médias - Últimos 7 Dias</div>
                 <div class="comparison-item">
                     <span class="comparison-label">Preço por Litro:</span>
                     <span class="comparison-value" id="media-litro-7d">R$ 0,0000</span>
@@ -589,7 +589,7 @@
             </div>
 
             <div class="comparison-card">
-                <div class="comparison-title">📊 Médias - Últimos 30 Dias - FOB</div>
+                <div class="comparison-title">📊 Médias - Últimos 30 Dias</div>
                 <div class="comparison-item">
                     <span class="comparison-label">Preço por Litro:</span>
                     <span class="comparison-value" id="media-litro-30d">R$ 0,0000</span>
@@ -648,8 +648,8 @@
 
     <script>
         // Configurações do Supabase - CONFIGURE SUAS CREDENCIAIS AQUI
-        const SUPABASE_URL = 'https://vzxlwokdspuxelkpvspw.supabase.co'; // URL do projeto Supabase
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eGx3b2tkc3B1eGVsa3B2c3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NjQ0NTcsImV4cCI6MjA3MDM0MDQ1N30._n2-78nHh9lvXRPPr0gXvIjOOnu1Q4VM092fYAbaxAk'; // Substitua pela sua chave anônima do Supabase
+        const SUPABASE_URL = 'http://supabasekong-o0sg8gk04g48s44084ksgggg.35.193.160.163.sslip.io/'; // URL do projeto Supabase
+        const SUPABASE_ANON_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc2MDk2NDU0MCwiZXhwIjo0OTE2NjM4MTQwLCJyb2xlIjoiYW5vbiJ9.dHIrMgzkkpJiIaXv1CyPfXepEUu5v_L-GHAwA5HLNjE'; // Substitua pela sua chave anônima do Supabase
         
         // Cache de dados
         let dadosHistorico = [];
@@ -1008,8 +1008,8 @@
             let html = '';
 
             dadosHistorico.forEach((item, index) => {
-                // Corrigir formatação de data para evitar problemas de fuso horário
-                const dataFormatada = new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR');
+                // Converter data do formato AAAA-MM-DD para DD/MM/AAAA (padrão brasileiro)
+                const dataFormatada = formatarDataBrasileira(item.data);
                 const anterior = dadosHistorico[index + 1];
                 
                 // Calcular classes de cor baseadas na variação
@@ -1210,6 +1210,37 @@
             atualizarComparacoes();
             atualizarTabela();
             criarGrafico();
+        }
+
+        // Função para converter data para DD/MM/AAAA (padrão brasileiro)
+        function formatarDataBrasileira(dataISO) {
+            if (!dataISO) return '';
+            
+            // Se a data já está no formato brasileiro, retorna como está
+            if (dataISO.includes('/')) return dataISO;
+            
+            // Tentar converter usando Date (funciona para AAAA-MM-DD padrão ISO)
+            try {
+                const data = new Date(dataISO + 'T00:00:00');
+                if (!isNaN(data.getTime())) {
+                    return data.toLocaleDateString('pt-BR');
+                }
+            } catch (error) {
+                console.warn('Erro ao usar Date para formatar:', dataISO, error);
+            }
+            
+            // Fallback manual para formatos não padrão
+            const partes = dataISO.split('-');
+            if (partes.length === 3) {
+                const [ano, mes, dia] = partes; // Formato ISO padrão: AAAA-MM-DD
+                // Verificar se é um formato válido
+                if (ano.length === 4 && mes.length <= 2 && dia.length <= 2) {
+                    return `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`;
+                }
+            }
+            
+            console.warn('Formato de data não reconhecido:', dataISO);
+            return dataISO;
         }
 
         // Função para atualizar dados manualmente
